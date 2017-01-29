@@ -8,6 +8,8 @@ ein-bot
 I'm a super intelligent dog
 
 ## Setup
+You should setup the Facebook messenger webhooks, pointing to this sinatra app.
+
 
 ```shell
 export ACCESS_TOKEN=EAACC4tt1Qk8BAAZCFIpMHZBoLtyggxlTGGfXaHZAGembpo4P83bjbnMjEIl1rDZBVFgRqdmCg1A7GSI5C8Ja6Tzr5aJ08fR03VKt4TeuSQT0ZCrlnLe6XS97wn7A7OFArxP8RzQ1lE1BNLQs8Tmk6hSWAa3hUbZCgRJ7eEqP9heAZDZD
@@ -17,6 +19,9 @@ export VERIFY_TOKEN=cc16df065beabe9c8371183d34cd6c12
 export CHAIN_ACCESS_TOKEN=einbot:03657a6f071b0b797b84bfd71fb2e8ee83f997a98f6295e91cec59a486e5b742
 export CHAIN_URL=https://ein-chain.herokuapp.com
 export CHAIN_EIN_XPUB=6dccf25759b8b90ccb2f0245a7f57392e6912c52fd15f7a91921543b7f978e67f591d2c33edc47eeecd57f7d427adb8419b22947dfab0df3d2994c8c79c83e5b
+
+bundle install
+bundle exec rackup
 ```
 
 ## License
