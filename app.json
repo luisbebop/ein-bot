@@ -1,0 +1,7 @@
+{
+  "name": "Ein bot",
+  "description": "A super intelligent dog",
+  "repository": "https://github.com/luisbebop/ein-bot",
+  "logo": "http://vignette1.wikia.nocookie.net/cowboybebop/images/c/cd/6_Ein1.png",
+  "keywords": ["ruby", "sinatra", "facebook", "messenger", "bot"]
+}
