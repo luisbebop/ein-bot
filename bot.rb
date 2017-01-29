@@ -76,7 +76,7 @@ Bot.on :message do |message|
     if u.chat_context == "TELL_NICKNAME"
       u.update!(:nickname => message.text, :chat_context => "READY_TO_PLAY")
       message.reply(
-        text: "Well done @#{message.text}. Now you can call your friends to play using their @nickname ...",
+        text: "Well done @#{message.text}. Use your nickname to play with your friends ...",
       )
       message.type
       message.reply(
