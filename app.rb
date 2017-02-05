@@ -10,7 +10,7 @@ get '/' do
 <html>
 <body>
 
-See ya in space Cowboy! 
+See ya space Cowboy! 
 
 <br/>
 <br/>
