@@ -32,6 +32,9 @@ Bot.on :message do |message|
       )
     end
     
+  when /play/i
+    play_coin(message)
+    
   when /hello/i    
     message.reply(
       text: 'Hello, human!',
@@ -103,6 +106,9 @@ Bot.on :message do |message|
           }
         }
       )
+      
+      u.transfer_woolong("ein", u.nickname, 1000, chain)
+      
     else
       message.reply(
         text: '🍄'
@@ -114,26 +120,129 @@ end
 
 Bot.on :postback do |postback|
   puts "on :postback '#{postback.inspect}'"
-  
-  postback.type
-  
+    
   u = User.find_by_scoped_id(postback.sender["id"])
+  text = '🍄'
   
   case postback.payload
   when 'HUMAN_LIKED'
+    postback.type
     text = 'That makes ein happy!'
+    postback.reply(
+      text: text
+    )
   when 'HUMAN_DISLIKED'
+    postback.type
     text = 'Oh.'
+    postback.reply(
+      text: text
+    )
   when 'CHECK_BALANCE'
+    postback.type
     text = "You have #{u.balance(chain)} woolongs in your wallet"
+    postback.reply(
+      text: text
+    )
   when 'LETS_PLAY'
-    text = 'Say the name your friend, game and how much your are betting. ex: @ein dice 100 woolongs'
+    postback.type
+    text = 'Alright ...'
+    postback.reply(
+      text: text
+    )
   end
-  postback.reply(
-    text: text
-  )
+  
+  if (postback.payload == "LETS_PLAY" || postback.payload == 'TRY_AGAIN_PLAY')
+    postback.type
+    play_coin(postback)
+  end
+  
+  if (postback.payload == 'LETS_PLAY_COIN_BET100')
+    toss_coin(postback, 100, u, chain)
+  end
+  
+  if (postback.payload == 'LETS_PLAY_COIN_BET200')
+    toss_coin(postback, 200, u, chain)
+  end
+  
+  if (postback.payload == 'LETS_PLAY_COIN_BET1000')
+    toss_coin(postback, 1000, u, chain)
+  end
+  
 end
 
 Bot.on :delivery do |delivery|
   puts "Delivered message(s) #{delivery.ids}"
+end
+
+def play_coin(ctx)
+  ctx.reply(
+    attachment: {
+      type: 'template',
+      payload: {
+        template_type: 'button',
+        text: "I'll flip a coin. You are head! How much woolongs are you gonna bet?",
+        buttons: [
+          { type: 'postback', title: '100', payload: 'LETS_PLAY_COIN_BET100' },
+          { type: 'postback', title: '200', payload: 'LETS_PLAY_COIN_BET200' },
+          { type: 'postback', title: '1000', payload: 'LETS_PLAY_COIN_BET1000' }
+        ]
+      }
+    }
+  )
+end
+
+def toss_coin(ctx, amount, user, chain) 
+  if (user.balance(chain) < amount)
+    ctx.reply(
+      text: "Unfortunately you don't have enough woolongs to play. I can give you more woolongs ..."
+    )
+    return
+  end
+  
+  ctx.reply(
+    attachment: {
+      type: 'image',
+      payload: {
+        url: 'http://i.giphy.com/10bv4HhibS9nZC.gif'
+      }
+    }
+  )
+  
+  flip = rand(0..1)
+  ctx.type
+  
+  if (flip == 1)    
+    user.transfer_woolong("ein", user.nickname, amount, chain)
+    
+    ctx.reply(
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'button',
+          text: "Uow! You won #{amount} woolongs! You have #{user.balance(chain)} woolongs in your wallet.",
+          buttons: [
+            { type: 'postback', title: 'Try again', payload: 'TRY_AGAIN_PLAY' }
+          ]
+        }
+      }
+    )    
+  end
+  
+  if (flip == 0)
+    user.transfer_woolong(user.nickname, "ein", amount, chain)
+        
+    ctx.reply(
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'button',
+          text: "Yeah!!! I won #{amount} woolongs! You lose and still have #{user.balance(chain)} woolongs in your wallet.",
+          buttons: [
+            { type: 'postback', title: 'Try again!!!', payload: 'TRY_AGAIN_PLAY' }
+          ]
+        }
+      }
+    )
+  end
+  
 end

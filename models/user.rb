@@ -48,5 +48,26 @@ class User < ActiveRecord::Base
       balances.first.amount
     end
   end
+  
+  def transfer_woolong(sender, receiver, amount, chain)
+    signer = Chain::HSMSigner.new
+    
+    # asset xpub
+    signer.add_key(ENV['CHAIN_EIN_XPUB'], chain.mock_hsm.signer_conn)
+    
+    # ein xpub
+    signer.add_key(ENV['CHAIN_EIN_XPUB'], chain.mock_hsm.signer_conn)
+
+    # user xpub
+    signer.add_key(self.xpub, chain.mock_hsm.signer_conn)
+
+    spending_tx = chain.transactions.build do |b|
+      b.spend_from_account account_alias: sender, asset_alias: 'woolong', amount: amount
+      b.control_with_account account_alias: receiver, asset_alias: 'woolong', amount: amount
+    end
+    
+    signed_spending_tx = signer.sign(spending_tx)
+    chain.transactions.submit(signed_spending_tx)
+  end
 
 end
