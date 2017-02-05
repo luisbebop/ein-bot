@@ -194,7 +194,7 @@ end
 def toss_coin(ctx, amount, user, chain) 
   if (user.balance(chain) < amount)
     ctx.reply(
-      text: "Unfortunately you don't have enough woolongs to play. I can give you more woolongs ..."
+      text: "Unfortunately you don't have enough woolongs to play. I can give you more woolongs if you behave like a good human."
     )
     return
   end
