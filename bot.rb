@@ -21,7 +21,7 @@ Bot.on :message do |message|
       User.setup_user(message.sender["id"])
     else
       message.reply(
-        text: "Hi. Welcome back @#{u.nickname}"
+        text: "Hi. Welcome back @#{u.nickname}. You can say balance, play, hello, or what humans like?"
       )
     end
     
@@ -47,7 +47,7 @@ Bot.on :message do |message|
       ]
     )
     
-  when /something humans like/i
+  when /humans like/i
     message.reply(
       text: 'I found something humans seem to like:'
     )
