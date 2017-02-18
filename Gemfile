@@ -10,10 +10,10 @@ gem 'activerecord'
 gem 'sinatra-activerecord'
 gem 'rake'
 gem 'chain-sdk', require: 'chain'
+gem 'tux'
 
 group :development do
   gem 'sqlite3'
-  gem 'tux'
 end
 
 group :production do
