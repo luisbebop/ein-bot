@@ -210,7 +210,7 @@ def toss_coin(ctx, amount, user, chain)
     attachment: {
       type: 'image',
       payload: {
-        url: 'http://i.giphy.com/10bv4HhibS9nZC.gif'
+        url: 'https://media.giphy.com/media/10bv4HhibS9nZC/giphy.gif'
       }
     }
   )
