@@ -11,26 +11,26 @@ Bot.on :message do |message|
   message.type
   
   u = User.find_by_scoped_id(message.sender["id"])
+
+  if u.nil?
+    message.reply(
+      text: 'Hi. I see you are new here. I will remember about you. Tell me your nickname.'
+    )
+    User.setup_user(message.sender["id"])
+    next
+  end
   
   case message.text    
+
   when /hi/i
-    if u.nil?
-      message.reply(
-        text: 'Hi. I see you are new here. I will remember about you. Tell me your nickname.'
-      )
-      User.setup_user(message.sender["id"])
-    else
-      message.reply(
-        text: "Hi. Welcome back @#{u.nickname}. You can say balance, play, hello, or what humans like?"
-      )
-    end
-    
+    message.reply(
+      text: "Hi. Welcome back @#{u.nickname}. You can say balance, play, hello, or what humans like?"
+    )
+ 
   when /balance/i
-    unless u.nil?
-      message.reply(
-        text: "You have #{u.balance(chain)} woolongs in your wallet"
-      )
-    end
+    message.reply(
+      text: "You have #{u.balance(chain)} woolongs in your wallet"
+    )
     
   when /play/i
     play_coin(message)
@@ -74,10 +74,18 @@ Bot.on :message do |message|
         }
       }
     )
-    
+     
   else
     if u.chat_context == "TELL_NICKNAME"
-      u.update!(:nickname => message.text, :chat_context => "READY_TO_PLAY")
+      begin
+        u.update!(:nickname => message.text, :chat_context => "READY_TO_PLAY")
+      rescue ActiveRecord::RecordInvalid => e
+        message.reply(
+          text: "Oh no! #{e.message.gsub("Validation failed: ", "")}. Say a different nickname"
+        )
+        next
+      end
+      
       message.reply(
         text: "Well done @#{message.text}. Use your nickname to play with your friends ...",
       )
@@ -86,7 +94,7 @@ Bot.on :message do |message|
         attachment: {
           type: 'image',
           payload: {
-            url: 'http://i.giphy.com/aZzXDWIjefE5y.gif'
+            url: 'https://media.giphy.com/media/vncgdgPWLwGRi/giphy.gif'
           }
         }
       )
@@ -107,11 +115,10 @@ Bot.on :message do |message|
         }
       )
       
-      u.transfer_woolong("ein", u.nickname, 1000, chain)
-      
+      u.transfer_woolong("ein", u.nickname, 1000, chain)  
     else
       message.reply(
-        text: '🍄'
+        text: "You can say hi, balance, play, hello, or what humans like?"
       )    
     end
   end

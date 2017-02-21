@@ -2,6 +2,8 @@ require 'httparty'
 require 'chain'
 
 class User < ActiveRecord::Base
+  validates :nickname, uniqueness: true
+  
   def self.get_sender_profile(scoped_id)
     request = HTTParty.get(
       "https://graph.facebook.com/v2.6/#{scoped_id}",
