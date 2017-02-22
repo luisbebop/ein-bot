@@ -12,12 +12,55 @@ Bot.on :message do |message|
   
   u = User.find_by_scoped_id(message.sender["id"])
 
+  # user doesn't exist
   if u.nil?
-    puts "---> u.nil?"
     message.reply(
       text: 'Hi. I see you are new here. I will remember about you. Tell me your nickname.'
     )
     User.setup_user(message.sender["id"])
+    next
+  end
+  
+  # user needs to setup a nickname
+  if u.chat_context == "TELL_NICKNAME"
+    begin
+      u.update!(:nickname => message.text.split.last, :chat_context => "READY_TO_PLAY")
+    rescue ActiveRecord::RecordInvalid => e
+      message.reply(
+        text: "Oh no! #{e.message.gsub("Validation failed: ", "")}. Say a different nickname"
+      )
+      next
+    end
+    
+    message.reply(
+      text: "Well done @#{message.text.split.last}. Use your nickname to play with your friends ...",
+    )
+    message.type
+    message.reply(
+      attachment: {
+        type: 'image',
+        payload: {
+          url: 'https://media.giphy.com/media/vncgdgPWLwGRi/giphy.gif'
+        }
+      }
+    )
+    message.type
+    u.create_wallet(chain)
+    
+    message.reply(
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'button',
+          text: 'Im giving you 1000 woolongs to play',
+          buttons: [
+            { type: 'postback', title: 'Check balance', payload: 'CHECK_BALANCE' },
+            { type: 'postback', title: 'Lets play', payload: 'LETS_PLAY' }
+          ]
+        }
+      }
+    )
+    u.transfer_woolong("ein", u.nickname, 1000, chain)
     next
   end
   
@@ -74,54 +117,11 @@ Bot.on :message do |message|
           ]
         }
       }
-    )
-     
+    )  
   else
-    if u.chat_context == "TELL_NICKNAME"
-      begin
-        u.update!(:nickname => message.text, :chat_context => "READY_TO_PLAY")
-      rescue ActiveRecord::RecordInvalid => e
-        message.reply(
-          text: "Oh no! #{e.message.gsub("Validation failed: ", "")}. Say a different nickname"
-        )
-        next
-      end
-      
-      message.reply(
-        text: "Well done @#{message.text}. Use your nickname to play with your friends ...",
-      )
-      message.type
-      message.reply(
-        attachment: {
-          type: 'image',
-          payload: {
-            url: 'https://media.giphy.com/media/vncgdgPWLwGRi/giphy.gif'
-          }
-        }
-      )
-      message.type
-      u.create_wallet(chain)
-      
-      message.reply(
-        attachment: {
-          type: 'template',
-          payload: {
-            template_type: 'button',
-            text: 'Im giving you 1000 woolongs to play',
-            buttons: [
-              { type: 'postback', title: 'Check balance', payload: 'CHECK_BALANCE' },
-              { type: 'postback', title: 'Lets play', payload: 'LETS_PLAY' }
-            ]
-          }
-        }
-      )
-      
-      u.transfer_woolong("ein", u.nickname, 1000, chain)  
-    else
       message.reply(
         text: "You can say hi, balance, play, hello, or what humans like?"
       )    
-    end
   end
   
 end
