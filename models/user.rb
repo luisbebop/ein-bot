@@ -17,8 +17,10 @@ class User < ActiveRecord::Base
   end
 
   def self.setup_user(scoped_id)
+    puts "---> self.setup_user"
     fb_user = self.get_sender_profile(scoped_id)
     name = "#{fb_user["first_name"]} #{fb_user["last_name"]}"
+    puts "---> self.setup_user #{name}"
     self.create(:name => name, :picture => fb_user["profile_pic"], :scoped_id => scoped_id, 
                 :chat_context => "TELL_NICKNAME")  
   end

@@ -13,6 +13,7 @@ Bot.on :message do |message|
   u = User.find_by_scoped_id(message.sender["id"])
 
   if u.nil?
+    puts "---> u.nil?"
     message.reply(
       text: 'Hi. I see you are new here. I will remember about you. Tell me your nickname.'
     )
