@@ -11,6 +11,7 @@ gem 'sinatra-activerecord'
 gem 'rake'
 gem 'chain-sdk', require: 'chain'
 gem 'tux'
+gem 'httmultiparty'
 
 group :development do
   gem 'sqlite3'

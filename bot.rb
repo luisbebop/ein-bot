@@ -1,3 +1,5 @@
+require 'httparty'
+require 'httmultiparty'
 require 'facebook/messenger'
 require 'chain'
 require './models/user'
@@ -61,6 +63,29 @@ Bot.on :message do |message|
       }
     )
     u.transfer_woolong("ein", u.nickname, 1000, chain)
+    next
+  end
+  
+  # user sent an image
+  unless message.attachments.nil?
+    puts ">>> received an image ..."
+    
+    # define random filename to write on ephemeral system
+    fn = "./tmp/#{rand(36**16).to_s(36)}.jpg"
+    
+    # save attachment image
+    File.open(fn, "wb") do |f|
+      f.write HTTParty.get(message.attachments.first["payload"]["url"]).parsed_response
+      f.close
+    end
+    
+    # upload to API to decode InfinitePay QR Code
+    response = HTTMultiParty.post('https://infinite-qrcode.herokuapp.com/upload', :query => {:file => File.new(fn)}).parsed_response
+
+    # replay message with QR Code decoded
+    message.reply(
+      text: "#{response}"
+    )
     next
   end
   
