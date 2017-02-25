@@ -70,17 +70,20 @@ Bot.on :message do |message|
   unless message.attachments.nil?
     puts ">>> received an image ..."
     
-    # define random filename to write on ephemeral system
-    fn = "./tmp/#{rand(36**16).to_s(36)}.jpg"
+    # # define random filename to write on ephemeral system
+    # fn = "./tmp/#{rand(36**16).to_s(36)}.jpg"
+    #
+    # # save attachment image
+    # File.open(fn, "wb") do |f|
+    #   f.write HTTParty.get(message.attachments.first["payload"]["url"]).parsed_response
+    #   f.close
+    # end
+    #
+    # # upload to API to decode InfinitePay QR Code
+    # response = HTTMultiParty.post('https://zxing.org/w/decode', :query => {:file => File.new(fn)}).parsed_response
     
-    # save attachment image
-    File.open(fn, "wb") do |f|
-      f.write HTTParty.get(message.attachments.first["payload"]["url"]).parsed_response
-      f.close
-    end
+    response = HTTParty.get("https://zxing.org/w/decode?u=#{message.attachments.first["payload"]["url"]}").parsed_response
     
-    # upload to API to decode InfinitePay QR Code
-    response = HTTMultiParty.post('https://zxing.org/w/decode', :query => {:file => File.new(fn)}).parsed_response
     data = /<pre>(.*?)<\/pre>/.match(response)
     if data.nil?
       # replay with not found message
