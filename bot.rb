@@ -82,7 +82,9 @@ Bot.on :message do |message|
     # # upload to API to decode InfinitePay QR Code
     # response = HTTMultiParty.post('https://zxing.org/w/decode', :query => {:file => File.new(fn)}).parsed_response
     
-    response = HTTParty.get("https://zxing.org/w/decode?u=#{message.attachments.first["payload"]["url"]}").parsed_response
+    url = "https://zxing.org/w/decode?u=#{message.attachments.first["payload"]["url"]}"
+    puts url
+    response = HTTParty.get(url).parsed_response
     
     data = /<pre>(.*?)<\/pre>/.match(response)
     if data.nil?
