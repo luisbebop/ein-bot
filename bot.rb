@@ -81,7 +81,7 @@ Bot.on :message do |message|
     
     # upload to API to decode InfinitePay QR Code
     response = HTTMultiParty.post('https://zxing.org/w/decode', :query => {:file => File.new(fn)}).parsed_response
-    data = /<pre>(.*?)<\/pre>/.match(response)[1]
+    data = /<pre>(.*?)<\/pre>/.match(response)
     if data.nil?
       # replay with not found message
       message.reply(
@@ -90,7 +90,7 @@ Bot.on :message do |message|
     else
       # replay message with QR Code decoded
       message.reply(
-        text: "#{data}"
+        text: "#{data[1]}"
       )
     end
 
