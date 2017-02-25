@@ -82,10 +82,18 @@ Bot.on :message do |message|
     # upload to API to decode InfinitePay QR Code
     response = HTTMultiParty.post('https://infinite-qrcode.herokuapp.com/decode', :query => {:file => File.new(fn)}).parsed_response
 
-    # replay message with QR Code decoded
-    message.reply(
-      text: "#{response}"
-    )
+    if response.nil?
+      # replay with not found message
+      message.reply(
+        text: "Beautiful picture <3"
+      )
+    else
+      # replay message with QR Code decoded
+      message.reply(
+        text: "#{response}"
+      )
+    end
+
     next
   end
   
