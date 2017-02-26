@@ -6,6 +6,7 @@ require './models/user'
 
 include Facebook::Messenger
 chain = Chain::Client.new(:access_token => ENV['CHAIN_ACCESS_TOKEN'], :url => ENV['CHAIN_URL'])
+help_cmds = "hi, balance, play, hello, tag, meta or what humans like?"
 
 Bot.on :message do |message|
   puts "on :message '#{message.inspect}' from #{message.sender}"
@@ -138,7 +139,7 @@ Bot.on :message do |message|
 
   when /hi/i
     message.reply(
-      text: "Hi. Welcome back @#{u.nickname}. You can say balance, play, hello, tag, or what humans like?"
+      text: "Hi. Welcome back @#{u.nickname}. You can say #{help_cmds}"
     )
     
   when /tag/i
@@ -150,6 +151,16 @@ Bot.on :message do |message|
   when /balance/i
     message.reply(
       text: "You have #{u.balance(chain)} woolongs in your wallet"
+    )
+    
+  when /meta/o
+    message.reply(
+      attachment: {
+        type: 'image',
+        payload: {
+          url: 'https://cdn-images-1.medium.com/max/1000/1*rGiRHME_Roqsgz2CUg5yrg.png'
+        }
+      }
     )
     
   when /play/i
@@ -196,7 +207,7 @@ Bot.on :message do |message|
     )  
   else
       message.reply(
-        text: "You can say hi, balance, play, hello, tag or what humans like?"
+        text: "You can say #{help_cmds}"
       )    
   end
   
