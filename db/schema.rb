@@ -15,10 +15,11 @@ ActiveRecord::Schema.define(version: 20170129000028) do
   create_table "users", force: :cascade do |t|
     t.string  "name"
     t.string  "picture"
-    t.integer "scoped_id",    limit: 8
+    t.integer "scoped_id",           limit: 8
     t.string  "xpub"
     t.string  "nickname"
     t.string  "chat_context"
+    t.string  "chat_context_buffer"
   end
 
 end

@@ -66,6 +66,42 @@ Bot.on :message do |message|
     next
   end
   
+  if u.chat_context == "TAG_IMAGE_TXT"
+    u.update!(:chat_context => "TAG_IMAGE_IMG", :chat_context_buffer => message.text)
+    message.reply(
+      text: "Now send the picture to tag the information ...",
+    )
+    next
+  end
+  
+  if u.chat_context == "TAG_IMAGE_IMG" and message.attachments
+    # define random filename to write on ephemeral system
+    fn = "./tmp/#{rand(36**16).to_s(36)}.jpg"
+
+    # save attachment image
+    File.open(fn, "wb") do |f|
+      f.write HTTParty.get(message.attachments.first["payload"]["url"]).parsed_response
+      f.close
+    end
+    
+    # upload to API to tagimage with InfinitePay QR Code
+    response = HTTMultiParty.post("https://infinite-qrcode.herokuapp.com/tagimage?text=#{u.chat_context_buffer}", :query => {:file => File.new(fn)}).parsed_response
+    
+    puts ">>> #{response}"
+        
+    message.reply(
+      attachment: {
+        type: 'image',
+        payload: {
+          url: response
+        }
+      }
+    )
+    
+    u.update!(:chat_context => "READY_TO_PLAY", :chat_context_buffer => "")
+    next
+  end
+  
   # user sent an image
   unless message.attachments.nil?
     puts ">>> received an image ..."
@@ -102,7 +138,13 @@ Bot.on :message do |message|
 
   when /hi/i
     message.reply(
-      text: "Hi. Welcome back @#{u.nickname}. You can say balance, play, hello, or what humans like?"
+      text: "Hi. Welcome back @#{u.nickname}. You can say balance, play, hello, tag, or what humans like?"
+    )
+    
+  when /tag/i
+    u.update!(:chat_context => "TAG_IMAGE_TXT")
+    message.reply(
+      text: "What info do you wanna save in your picture? (copy/paste or type)"
     )
  
   when /balance/i
@@ -154,7 +196,7 @@ Bot.on :message do |message|
     )  
   else
       message.reply(
-        text: "You can say hi, balance, play, hello, or what humans like?"
+        text: "You can say hi, balance, play, hello, tag or what humans like?"
       )    
   end
   

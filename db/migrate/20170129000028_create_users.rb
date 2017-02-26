@@ -7,6 +7,7 @@ class CreateUsers < ActiveRecord::Migration[5.0]
       t.string  :xpub
       t.string  :nickname
       t.string  :chat_context
+      t.string  :chat_context_buffer
     end
   end
 end
