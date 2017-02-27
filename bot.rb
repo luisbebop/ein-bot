@@ -153,7 +153,7 @@ Bot.on :message do |message|
       text: "You have #{u.balance(chain)} woolongs in your wallet"
     )
     
-  when /meta/o
+  when /meta/i
     message.reply(
       attachment: {
         type: 'image',
