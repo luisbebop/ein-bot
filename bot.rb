@@ -152,6 +152,20 @@ Bot.on :message do |message|
     message.reply(
       text: "You have #{u.balance(chain)} woolongs and $ #{u.btc_balance(currency: 'USD')} in bitcoins on your wallet"
     )
+  
+  when /address/i
+    addr = u.btc_addr
+    message.reply(
+      text: "Your bitcoin address is: #{addr}"
+    )
+    message.reply(
+      attachment: {
+        type: 'image',
+        payload: {
+          url: HTTParty.get("https://infinite-qrcode.herokuapp.com/encode?s3=true&t=bitcoin:#{addr}").parsed_response
+        }
+      }
+    )
     
   when /meta/i
     message.reply(
