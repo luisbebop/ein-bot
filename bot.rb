@@ -126,18 +126,41 @@ Bot.on :message do |message|
         text: "Beautiful picture <3. Please send me picture with cool QR codes ..."
       )
     else
-      # check if this is a bitcoin address
+      # check if is a bitcoin address with amount
       btc = BitcoinUtil.parse_bitcoin_uri(data[1])
+      
       unless btc.nil?
+        addr = btc[:addr]
+        amount = btc[:parameters]["amount"][0]
+        product = btc[:parameters]["product"][0]
+        
+        if addr and amount and product
+          satoshis = (amount.to_f * 1e8).to_i
+          
+          message.reply(
+            attachment: {
+              type: 'template',
+              payload: {
+                template_type: 'button',
+                text: "Would you like to buy #{product} for $ #{BitcoinUtil.satoshi_to_currency(satoshis)}? Your current balance is $ #{u.btc_balance(currency: 'USD')}",
+                buttons: [
+                  { type: 'postback', title: 'Yes', payload: "BTCPAYMENTCONFIRM_#{addr}_#{satoshis}" },
+                  { type: 'postback', title: 'No', payload: "BTCPAYMENTCANCELLED" }
+                ]
+              }
+            }
+          )
+        else
+          message.reply(
+            text: "Bitcoin address should contain amount and product ..."
+          )
+        end
+      else
+        # replay message with QR Code decoded
         message.reply(
-          text: "Nice btc address ..."
+          text: "#{data[1]}"
         )
       end
-      
-      # replay message with QR Code decoded
-      message.reply(
-        text: "#{data[1]}"
-      )
     end
 
     next
@@ -284,6 +307,24 @@ Bot.on :postback do |postback|
   
   if (postback.payload == 'LETS_PLAY_COIN_BET1000')
     toss_coin(postback, 1000, u, chain)
+  end
+  
+  if (postback.payload == 'BTCPAYMENTCANCELLED')
+    postback.reply(
+      text: => "Maybe you don't really need this product, right ...", 
+    )
+  end
+  
+  if (postback.payload[0.16] == 'BTCPAYMENTCONFIRM')
+    addr = postback.payload.split('_')[1]
+    satoshis = postback.payload.split('_')[2] 
+    
+    # call bitcoin payment ...
+    # ...
+    
+    postback.reply(
+      text: => "paying #{satoshis} to #{addr} ...", 
+    )
   end
   
 end
