@@ -20,6 +20,8 @@ ActiveRecord::Schema.define(version: 20170129000028) do
     t.string  "nickname"
     t.string  "chat_context"
     t.string  "chat_context_buffer"
+    t.string  "mnemonic"
+    t.string  "btc_addr"
   end
 
 end

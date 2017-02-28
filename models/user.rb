@@ -1,5 +1,9 @@
 require 'httparty'
 require 'chain'
+require 'bip_mnemonic'
+require 'money-tree'
+require 'blockcypher-ruby'
+require 'facebook/messenger'
 
 class User < ActiveRecord::Base
   validates :nickname, uniqueness: true
@@ -37,6 +41,64 @@ class User < ActiveRecord::Base
         name: self.name
       }
     )
+    
+    create_btc_wallet
+  end
+  
+  def get_btc_address
+    # get user mnemonic
+    e = BipMnemonic.to_entropy(mnemonic: self.mnemonic)
+    
+    # open a bitcoin testnet HD wallet based on the mnemonic
+    master = MoneyTree::Master.new(seed_hex: e, network: :bitcoin_testnet)
+    
+    # navigate to the first node and get addr
+    node = master.node_for_path "m/0"
+    addr = node.to_address(network: :bitcoin_testnet)
+    
+    # used to sign micro tx
+    # wif = node.private_key.to_wif(network: :bitcoin_testnet)
+    
+    # return addr 'm/0'
+    self.update!(:btc_addr => addr)
+    addr
+  end
+    
+  def btc_balance(currency: nil)
+    b = BlockCypher::Api.new({api_token: ENV['BLOCKCYPHER_TOKEN'], network: ENV['BLOCKCYPHER_NETWORK'], version: BlockCypher::V1})
+    s = b.address_final_balance(self.btc_addr)
+    
+    return s if currency.nil?
+    
+    HTTParty.get("https://blockchain.info/frombtc?currency=#{currency}&value=#{s}").parsed_response
+  end
+  
+  def create_btc_wallet
+    # generate 128 bits of entropy and convert to a readable mnemonic
+    m = BipMnemonic.to_mnemonic(bits: 128)
+    e = BipMnemonic.to_entropy(mnemonic: m)
+    
+    # open a bitcoin testnet HD wallet based on the mnemonic
+    master = MoneyTree::Master.new(seed_hex: e, network: :bitcoin_testnet)
+    xpub = master.to_bip32(:public, network: :bitcoin_testnet)
+    
+    b = BlockCypher::Api.new({api_token: ENV['BLOCKCYPHER_TOKEN'], network: ENV['BLOCKCYPHER_NETWORK'], version: BlockCypher::V1})
+    # add xpub and create wallet on blockcypher
+    # b.wallet_hd_create(self.nickname, xpub)
+    # b.wallet_hd_derive_addr(self.nickname)
+        
+    # update mnemonic for that user
+    self.update!(:mnemonic => m)
+    
+    # get bitcoin addr 'm/0'
+    addr = get_btc_address
+    
+    # setup a webhook for that addr
+    url = "#{ENV['URL_HOST']}/callbacks/new-tx?token=#{ENV['VERIFY_TOKEN']}"
+    b.event_webhook_subscribe(url, "unconfirmed-tx", address: addr)
+    
+    # return mnemonic
+    m
   end
   
   def balance(chain)
@@ -71,5 +133,16 @@ class User < ActiveRecord::Base
     signed_spending_tx = signer.sign(spending_tx)
     chain.transactions.submit(signed_spending_tx)
   end
-
+  
+  def send_message(msg)
+    Bot.deliver({
+      recipient: {
+        id: self.scoped_id
+      },
+      message: {
+        text: msg
+      }
+    }, access_token: ENV['ACCESS_TOKEN'])
+  end
+  
 end

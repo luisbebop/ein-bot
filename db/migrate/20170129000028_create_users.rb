@@ -8,6 +8,8 @@ class CreateUsers < ActiveRecord::Migration[5.0]
       t.string  :nickname
       t.string  :chat_context
       t.string  :chat_context_buffer
+      t.string  :mnemonic
+      t.string  :btc_addr
     end
   end
 end

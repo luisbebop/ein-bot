@@ -150,7 +150,7 @@ Bot.on :message do |message|
  
   when /balance/i
     message.reply(
-      text: "You have #{u.balance(chain)} woolongs in your wallet"
+      text: "You have #{u.balance(chain)} woolongs and $ #{u.btc_balance(currency: 'USD')} in bitcoins on your wallet"
     )
     
   when /meta/i

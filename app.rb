@@ -2,6 +2,7 @@ require 'sinatra'
 require 'sinatra/activerecord'
 require './config/environments'
 require './models/user'
+require './util'
 
 set :logging, true
 
@@ -22,6 +23,20 @@ See ya space Cowboy!
 HTML
 
   html
+end
+
+post '/callbacks/new-tx' do
+  halt 401 if params['token'] != ENV['VERIFY_TOKEN']
+  
+  data = JSON.parse(request.body.read)
+    
+  data['outputs'].each do |o|
+    u = User.find_by_btc_addr(o['addresses'][0])
+    puts "value: #{o['value']} addr: #{o['addresses'][0]}"
+    u.send_message "You just received $ #{BitcoinUtil.satoshi_to_currency(o['value'])} . Now you have $ #{u.btc_balance(currency: 'USD')} in bitcoins!" unless u.nil?
+  end
+  
+  "ok"
 end
 
 get '/tos' do

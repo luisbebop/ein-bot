@@ -12,6 +12,9 @@ gem 'rake'
 gem 'chain-sdk', require: 'chain'
 gem 'tux'
 gem 'httmultiparty'
+gem 'blockcypher-ruby', :git => 'https://github.com/luisbebop/ruby-client'
+gem 'bip_mnemonic'
+gem 'money-tree'
 
 group :development do
   gem 'sqlite3'
