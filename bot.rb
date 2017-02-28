@@ -6,7 +6,7 @@ require './models/user'
 
 include Facebook::Messenger
 chain = Chain::Client.new(:access_token => ENV['CHAIN_ACCESS_TOKEN'], :url => ENV['CHAIN_URL'])
-help_cmds = "hi, balance, play, hello, tag, meta or what humans like?"
+help_cmds = "hi, balance, play, hello, tag, address, meta or what humans like?"
 
 Bot.on :message do |message|
   puts "on :message '#{message.inspect}' from #{message.sender}"
