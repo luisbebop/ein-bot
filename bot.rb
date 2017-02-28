@@ -6,7 +6,7 @@ require './models/user'
 
 include Facebook::Messenger
 chain = Chain::Client.new(:access_token => ENV['CHAIN_ACCESS_TOKEN'], :url => ENV['CHAIN_URL'])
-help_cmds = "hi, balance, play, hello, tag, address, meta or what humans like?"
+help_cmds = "hi, balance, play, hello, sell, address, meta or what humans like?"
 
 Bot.on :message do |message|
   puts "on :message '#{message.inspect}' from #{message.sender}"
@@ -123,9 +123,17 @@ Bot.on :message do |message|
     if data.nil?
       # replay with not found message
       message.reply(
-        text: "Beautiful picture <3"
+        text: "Beautiful picture <3. Please send me picture with cool QR codes ..."
       )
     else
+      # check if this is a bitcoin address
+      btc = BitcoinUtil.parse_bitcoin_uri(data[1])
+      unless btc.nil?
+        message.reply(
+          text: "Nice btc address ..."
+        )
+      end
+      
       # replay message with QR Code decoded
       message.reply(
         text: "#{data[1]}"
@@ -142,7 +150,7 @@ Bot.on :message do |message|
       text: "Hi. Welcome back @#{u.nickname}. You can say #{help_cmds}"
     )
     
-  when /tag/i
+  when /sell/i
     u.update!(:chat_context => "TAG_IMAGE_TXT")
     message.reply(
       text: "What info do you wanna save in your picture? (copy/paste or type)"
