@@ -158,6 +158,7 @@ Bot.on :message do |message|
     message.reply(
       text: "Your bitcoin address is: #{addr}"
     )
+    message.type
     message.reply(
       attachment: {
         type: 'image',
