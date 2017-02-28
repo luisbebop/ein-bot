@@ -1,0 +1,25 @@
+https://live.blockcypher.com/bcy/xpub/tpubD6NzVbkrYhZ4WW9FN92QsfW1x1AGLSkpGorQPM5M5ETFWmyBqr2GfpJjLYrzXW5zfeYLtxDi9HY2RvC5Vj8XFDa4U6qgtu6re9ZVhYN4ywW/?subchain-indices=0-1
+
+curl -d '{ "from_wif": "cMrxjBau7NKh1XfdX5mTpTDXEJSkUkD3TA2kC2KbpLj8rMMndyao", "to_address": "mzQKY9C7VFt28MvJeoA1NpSy5SkLYPmFKQ", "value_satoshis": 200000 }' https://api.blockcypher.com/v1/btc/test3/txs/micro?token=903b9e28960c40b9acef373920a0279c
+
+curl -d '{"event": "unconfirmed-tx", "address": "mj1pPAco5LcUxMKyuZwhB6CCXjfTU6wC7P", "url": "http://requestb.in/1l995xq1"}' https://api.blockcypher.com/v1/btc/test3/hooks?token=903b9e28960c40b9acef373920a0279c
+
+curl -d '{"event": "unconfirmed-tx", "wallet_name": "luisbebop", "url": "http://requestb.in/1l995xq1"}' https://api.blockcypher.com/v1/btc/test3/hooks?token=903b9e28960c40b9acef373920a0279c
+
+curl http://api.blockcypher.com/v1/btc/test3/addrs/mj1pPAco5LcUxMKyuZwhB6CCXjfTU6wC7P
+
+curl https://api.blockcypher.com/v1/btc/test3/hooks?token=903b9e28960c40b9acef373920a0279c
+
+curl -X DELETE -Is https://api.blockcypher.com/v1/btc/main/hooks/d7025618-c640-4a9d-8a18-d437a3cc2b39?token=903b9e28960c40b9acef373920a0279c | grep "HTTP/1.1"
+
+curl https://api.blockcypher.com/v1/btc/test3/wallets?token=903b9e28960c40b9acef373920a0279c
+
+curl -X DELETE -Is https://api.blockcypher.com/v1/btc/test3/wallets/hd/luisbebop?token=903b9e28960c40b9acef373920a0279c | grep "HTTP/1.1"
+
+curl -d '{"name": "luisbebop", "extended_public_key": "tpubD6NzVbkrYhZ4WW9FN92QsfW1x1AGLSkpGorQPM5M5ETFWmyBqr2GfpJjLYrzXW5zfeYLtxDi9HY2RvC5Vj8XFDa4U6qgtu6re9ZVhYN4ywW"}' https://api.blockcypher.com/v1/btc/test3/wallets/hd?token=903b9e28960c40b9acef373920a0279c
+
+curl https://api.blockcypher.com/v1/btc/test3/wallets/hd/luisbebop?token=903b9e28960c40b9acef373920a0279c
+
+curl -X POST https://api.blockcypher.com/v1/btc/test3/wallets/hd/luisbebop/addresses/derive?token=903b9e28960c40b9acef373920a0279c
+
+curl https://api.blockcypher.com/v1/btc/test3/addrs/luisbebop/balance
