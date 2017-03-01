@@ -2,6 +2,7 @@ require 'httparty'
 require 'httmultiparty'
 require 'facebook/messenger'
 require 'chain'
+require 'uri'
 require './models/user'
 
 include Facebook::Messenger
@@ -70,12 +71,19 @@ Bot.on :message do |message|
   if u.chat_context == "TAG_IMAGE_TXT"
     u.update!(:chat_context => "TAG_IMAGE_IMG", :chat_context_buffer => message.text)
     message.reply(
-      text: "Now send the picture to tag the information ...",
+      text: "Now send me a picture of the product you wanna sell",
     )
     next
   end
   
   if u.chat_context == "TAG_IMAGE_IMG" and message.attachments
+    price = u.chat_context_buffer.split(" ").last
+    product = u.chat_context_buffer.gsub(price, "").strip
+    addr = u.btc_addr
+    btc = BitcoinUtil.currency_to_btc(price)
+    
+    t = "bitcoin:#{addr}?amount=#{btc}&product=#{URI.escape(product)}"
+    
     # define random filename to write on ephemeral system
     fn = "./tmp/#{rand(36**16).to_s(36)}.jpg"
 
@@ -86,7 +94,7 @@ Bot.on :message do |message|
     end
     
     # upload to API to tagimage with InfinitePay QR Code
-    response = HTTMultiParty.post("https://infinite-qrcode.herokuapp.com/tagimage?text=#{u.chat_context_buffer}", :query => {:file => File.new(fn)}).parsed_response
+    response = HTTMultiParty.post("https://infinite-qrcode.herokuapp.com/tagimage", :query => {:text=> t, :file => File.new(fn)}).parsed_response
     
     puts ">>> #{response}"
         
@@ -176,7 +184,7 @@ Bot.on :message do |message|
   when /sell/i
     u.update!(:chat_context => "TAG_IMAGE_TXT")
     message.reply(
-      text: "What info do you wanna save in your picture? (copy/paste or type)"
+      text: "Please, describe the product you wanna sell in the format (product price in USD) ex: iphone 7 10"
     )
  
   when /balance/i
@@ -311,20 +319,27 @@ Bot.on :postback do |postback|
   
   if (postback.payload == 'BTCPAYMENTCANCELLED')
     postback.reply(
-      text: => "Maybe you don't really need this product, right ...", 
+      text: "Maybe you don't really need this product, right ..." 
     )
   end
   
-  if (postback.payload[0.16] == 'BTCPAYMENTCONFIRM')
+  if (postback.payload[0..16] == 'BTCPAYMENTCONFIRM')
     addr = postback.payload.split('_')[1]
     satoshis = postback.payload.split('_')[2] 
     
     # call bitcoin payment ...
-    # ...
+    h = u.transfer_btc(addr, satoshis)
     
-    postback.reply(
-      text: => "paying #{satoshis} to #{addr} ...", 
-    )
+    if h[:hash].nil?
+      postback.reply(
+        text: "Payment failed: #{h[:message]}" 
+      )
+    else
+      postback.reply(
+        text: "Payment completed!  https://live.blockcypher.com/btc-testnet/tx/#{h[:hash]}" 
+      )
+    end
+    
   end
   
 end

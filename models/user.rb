@@ -7,7 +7,12 @@ require 'facebook/messenger'
 
 class User < ActiveRecord::Base
   validates :nickname, uniqueness: true
+  attr_accessor :blockcypher
   
+  after_initialize do
+    @blockcypher ||= BlockCypher::Api.new({api_token: ENV['BLOCKCYPHER_TOKEN'], network: ENV['BLOCKCYPHER_NETWORK'], version: BlockCypher::V1})
+  end
+    
   def self.get_sender_profile(scoped_id)
     request = HTTParty.get(
       "https://graph.facebook.com/v2.6/#{scoped_id}",
@@ -63,10 +68,29 @@ class User < ActiveRecord::Base
     self.update!(:btc_addr => addr)
     addr
   end
+  
+  def transfer_btc(to_address, satoshis)
+    # get user mnemonic
+    e = BipMnemonic.to_entropy(mnemonic: self.mnemonic)
+    
+    # open a bitcoin testnet HD wallet based on the mnemonic
+    master = MoneyTree::Master.new(seed_hex: e, network: :bitcoin_testnet)
+    
+    # navigate to the first node and get addr
+    node = master.node_for_path "m/0"
+    private_key = node.private_key.to_hex
+        
+    begin
+      t = @blockcypher.microtx_from_priv(private_key, to_address, satoshis.to_i)
+    rescue BlockCypher::Api::Error => e
+      return {hash: nil, message: e.message}
+    end
+    
+    {hash: t["hash"], message: nil}
+  end
     
   def btc_balance(currency: nil)
-    b = BlockCypher::Api.new({api_token: ENV['BLOCKCYPHER_TOKEN'], network: ENV['BLOCKCYPHER_NETWORK'], version: BlockCypher::V1})
-    s = b.address_final_balance(self.btc_addr)
+    s = @blockcypher.address_final_balance(self.btc_addr)
     
     return s if currency.nil?
     
@@ -81,12 +105,7 @@ class User < ActiveRecord::Base
     # open a bitcoin testnet HD wallet based on the mnemonic
     master = MoneyTree::Master.new(seed_hex: e, network: :bitcoin_testnet)
     xpub = master.to_bip32(:public, network: :bitcoin_testnet)
-    
-    b = BlockCypher::Api.new({api_token: ENV['BLOCKCYPHER_TOKEN'], network: ENV['BLOCKCYPHER_NETWORK'], version: BlockCypher::V1})
-    # add xpub and create wallet on blockcypher
-    # b.wallet_hd_create(self.nickname, xpub)
-    # b.wallet_hd_derive_addr(self.nickname)
-        
+            
     # update mnemonic for that user
     self.update!(:mnemonic => m)
     
@@ -95,7 +114,7 @@ class User < ActiveRecord::Base
     
     # setup a webhook for that addr
     url = "#{ENV['URL_HOST']}/callbacks/new-tx?token=#{ENV['VERIFY_TOKEN']}"
-    b.event_webhook_subscribe(url, "unconfirmed-tx", address: addr)
+    @blockcypher.event_webhook_subscribe(url, "unconfirmed-tx", address: addr)
     
     # return mnemonic
     m
