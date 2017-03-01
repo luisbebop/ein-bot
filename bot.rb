@@ -136,9 +136,18 @@ Bot.on :message do |message|
     else
       # check if is a bitcoin address with amount
       btc = BitcoinUtil.parse_bitcoin_uri(data[1])
-      
+            
       unless btc.nil?
         addr = btc[:addr]
+        
+        # validate bitcoin uri parameters
+        if btc[:parameters].nil?
+          message.reply(
+            text: "Bitcoin address should contain amount and product ..."
+          )
+          next
+        end
+        
         amount = btc[:parameters]["amount"][0]
         product = btc[:parameters]["product"][0]
         
@@ -157,10 +166,6 @@ Bot.on :message do |message|
                 ]
               }
             }
-          )
-        else
-          message.reply(
-            text: "Bitcoin address should contain amount and product ..."
           )
         end
       else
