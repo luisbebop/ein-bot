@@ -3,6 +3,7 @@ require 'httmultiparty'
 require 'facebook/messenger'
 require 'chain'
 require 'uri'
+require 'foursquare2'
 require './models/user'
 
 include Facebook::Messenger
@@ -66,6 +67,24 @@ Bot.on :message do |message|
     )
     u.transfer_woolong("ein", u.nickname, 1000, chain)
     next
+  end
+  
+  if message.attachments
+    if message.attachments.first['type'] == 'location'
+      coords = message.attachments.first['payload']['coordinates']
+      lat = coords['lat']
+      long = coords['long']
+      
+      client = Foursquare2::Client.new(:client_id => ENV['FOURSQUARE_ID'], :client_secret => ENV['FOURSQUARE_SECRET'], :api_version => '20170301')
+      m = client.search_venues(:ll => "#{lat},#{long}", :query => '')
+      m.venues.first.contact
+      
+      message.reply(
+        text: "I think you are at #{m.venues.first.name}",
+      )
+      
+      next
+    end
   end
   
   if u.chat_context == "TAG_IMAGE_TXT"

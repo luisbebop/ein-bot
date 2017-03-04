@@ -6,6 +6,15 @@ GIT
       bitcoin-ruby (~> 0.0.5)
       ffi
 
+GIT
+  remote: https://github.com/mattmueller/foursquare2
+  revision: 0affc7d4bd5a3aea51e16782def38f589d16e60a
+  specs:
+    foursquare2 (2.0.2)
+      faraday (~> 0.8)
+      faraday_middleware (>= 0.8)
+      hashie (>= 1.0, < 4.0.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -29,7 +38,12 @@ GEM
     facebook-messenger (0.11.0)
       httparty (~> 0.13, >= 0.13.7)
       rack (>= 1.6.4)
+    faraday (0.11.0)
+      multipart-post (>= 1.2, < 3)
+    faraday_middleware (0.11.0.1)
+      faraday (>= 0.7.4, < 1.0)
     ffi (1.9.17)
+    hashie (3.5.5)
     httmultiparty (0.3.16)
       httparty (>= 0.7.3)
       mimemagic
@@ -86,6 +100,7 @@ DEPENDENCIES
   blockcypher-ruby!
   chain-sdk
   facebook-messenger (= 0.11.0)
+  foursquare2!
   httmultiparty
   httparty
   money-tree

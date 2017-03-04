@@ -15,6 +15,7 @@ gem 'httmultiparty'
 gem 'blockcypher-ruby', :git => 'https://github.com/luisbebop/ruby-client'
 gem 'bip_mnemonic'
 gem 'money-tree'
+gem 'foursquare2', :git => 'https://github.com/mattmueller/foursquare2'
 
 group :development do
   gem 'sqlite3'
